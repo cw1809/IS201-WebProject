@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Jump Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #f7f7f7;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        #restartButton {
+            display: none;
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #restartButton:hover {
+            background-color: #218838;
+        }
+
+        #goBackButton {
+            display: none;
+            position: absolute;
+            top: 70%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #goBackButton:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="300"></canvas>
+    <button id="restartButton">Restart</button>
+    <button id="goBackButton">Go Back to Site</button>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const restartButton = document.getElementById("restartButton");
+        const goBackButton = document.getElementById("goBackButton");
+
+        const GRAVITY = 0.6;
+        const INITIAL_JUMP_STRENGTH = -12;
+        const INITIAL_OBSTACLE_SPEED = 8;
+        const SPEED_INCREMENT = 1;
+
+        let isGameOver = false;
+        let score = 0;
+        let obstacleSpeed = INITIAL_OBSTACLE_SPEED;
+        let jumpStrength = INITIAL_JUMP_STRENGTH;
+        let obstacles = [];
+        let obstacleInterval = setInterval(createObstacle, 2000); // Initial interval
+
+        // Load Car Image
+        const carImage = new Image();
+        carImage.src = 'assets/img/carimage.png'; // Replace with the path to your image
+
+        // Car
+        const car = {
+            x: 40,
+            y: canvas.height - 20,
+            width: 100,
+            height: 80,
+            dy: 0,
+            jump() {
+                if (this.y >= canvas.height - this.height) {
+                    this.dy = jumpStrength;
+                }
+            },
+            draw() {
+                ctx.drawImage(carImage, this.x, this.y, this.width, this.height);
+            },
+            update() {
+                this.y += this.dy;
+                this.dy += GRAVITY;
+                if (this.y > canvas.height - this.height) {
+                    this.y = canvas.height - this.height;
+                    this.dy = 0;
+                }
+            }
+        };
+
+        // Load rock image
+        const rockImage = new Image();
+        rockImage.src = 'assets/img/rock.png'; // Replace with the correct path to your rock image
+
+        // Obstacles
+        function createObstacle() {
+            const size = Math.random() * 30 + 30; // Random size for the rock
+            obstacles.push({
+                x: canvas.width,
+                y: canvas.height - size, // Positioning the rock at the bottom
+                width: size,  // Rock's width
+                height: size, // Rock's height
+            });
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                ctx.drawImage(rockImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height); // Draw rock
+            });
+        }
+
+        function adjustObstacleInterval() {
+            clearInterval(obstacleInterval); // Stop the current interval
+            let newInterval = Math.max(1000, 2000 - score * 100); // Reduce the interval as score increases (min 1 second)
+            obstacleInterval = setInterval(createObstacle, newInterval); // Start a new interval with the adjusted time
+        }
+
+        function updateObstacles() {
+            obstacles.forEach(obstacle => {
+                obstacle.x -= obstacleSpeed;
+            });
+
+            // Remove obstacles that are off-screen
+            if (obstacles.length > 0 && obstacles[0].x + obstacles[0].width < 0) {
+                obstacles.shift();
+                score += 1;
+                adjustObstacleInterval(); // Adjust the interval after scoring
+                if (score % 5 === 0) { // Increase difficulty every 5 points
+                    obstacleSpeed += SPEED_INCREMENT;
+                    jumpStrength -= 0.5; // Make jumps slightly harder
+                }
+            }
+        }
+
+        // Collision Detection
+        function checkCollision() {
+            for (const obstacle of obstacles) {
+                if (
+                    car.x < obstacle.x + obstacle.width &&
+                    car.x + car.width > obstacle.x &&
+                    car.y < obstacle.y + obstacle.height &&
+                    car.y + car.height > obstacle.y
+                ) {
+                    isGameOver = true;
+                }
+            }
+        }
+
+        // Reset Game
+        function resetGame() {
+            isGameOver = false;
+            score = 0;
+            obstacleSpeed = INITIAL_OBSTACLE_SPEED;
+            jumpStrength = INITIAL_JUMP_STRENGTH;
+            obstacles = [];
+            restartButton.style.display = "none";
+            goBackButton.style.display = "none";
+            gameLoop();
+        }
+
+        // Go Back to Another Site
+        function goBackToSite() {
+            window.location.href = "scratch.html"; // Replace with the relative path to your file
+        }
+
+        // Game Loop
+        function gameLoop() {
+            if (isGameOver) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "white";
+                ctx.font = "24px Arial";
+                ctx.fillText(`Game Over! Your score: ${score}`, canvas.width / 2 - 120, canvas.height / 2);
+                restartButton.style.display = "block";
+                goBackButton.style.display = "block"; // Show the "Go Back" button after game over
+                return;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            car.update();
+            car.draw();
+
+            updateObstacles();
+            drawObstacles();
+
+            checkCollision();
+
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            ctx.fillText(`Score: ${score}`, 10, 30);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Game Start
+        gameLoop();
+
+        // Event Listeners
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "Space") {
+                car.jump();
+            }
+        });
+
+        restartButton.addEventListener("click", resetGame);
+        goBackButton.addEventListener("click", goBackToSite); // Event listener for "Go Back" button
+    </script>
+</body>
+</html>

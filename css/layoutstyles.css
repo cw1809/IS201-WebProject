@@ -1,0 +1,57 @@
+iframe {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 55%;
+    height: 400px;
+}
+main {
+    flex: 1;
+    padding-left: 30px;
+}
+.header {
+    overflow: hidden;
+    background-color: #ffe0ba;
+    padding: 20px 20px;
+    width: 98%;
+}
+.leftmenu {
+    top: 114px;
+    left: 5px;
+    width: 100px;
+    bottom: 39px;
+    z-index: 1;
+    padding-top: 40px;
+    border-right: solid 1px #555555;
+    padding-right: 5px;
+}
+
+.mainbody {
+    top: 40px;
+    bottom: 39px;
+}
+
+.rightmenu {
+    top: 114px;
+    right: 5px;
+    width: 100px;
+    bottom: 39px;
+    border-left: solid 1px #555555;
+    padding-left: 5px;
+}
+
+.footer {
+    background-color: #7b7b7b;
+    color: #fff;
+    text-align: center;
+    padding: 1em;
+  }
+
+.subheader {
+    float: right;  
+}
+.centercontent {
+    margin: 0 auto;
+    padding: 20px;
+    max-width: 1200px;
+}
